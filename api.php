@@ -2,7 +2,7 @@
 require('./config.php');
 
 // Endpoint para obter os detalhes de todas as campanhas
-if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/allcampaings') {
+if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/allcampaigns') {
     if($_SERVER['REQUEST_METHOD'] === 'GET'){
         $sql = $pdo->query("SELECT * FROM campaigns");
         if($sql->rowCount() > 0) {
@@ -112,6 +112,81 @@ function createResponseArray($id, $data) {
         'endDate' => $data['enddate'],
         'status' => 'active',
     ];
+}
+
+// Endpoint para atualizar uma campanha
+if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/editcampaign') {
+    if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+        parse_str(file_get_contents('php://input'), $input);
+
+        $fields = [
+            'id' => FILTER_SANITIZE_NUMBER_INT,
+            'name' => FILTER_SANITIZE_STRING,
+            'campaignbudget' => FILTER_SANITIZE_STRING,
+            'campaignpublic' => FILTER_SANITIZE_STRING,
+            'startdate' => FILTER_SANITIZE_STRING,
+            'enddate' => FILTER_SANITIZE_STRING,
+            'status' => FILTER_SANITIZE_STRING
+        ];
+    
+        $sanitizedData = validateInputFields($input, $fields);
+    
+        if($sanitizedData['id']){
+            $sql = $pdo->prepare('SELECT * FROM campaigns WHERE id = :id');
+            $sql->bindValue(':id', $sanitizedData['id']);
+            $sql->execute();
+        
+            if($sql->rowCount() > 0){
+                $originalData = $sql->fetch(PDO::FETCH_ASSOC);
+        
+                $fieldsToUpdate = [];
+                foreach ($sanitizedData as $field => $value) {
+                    if ($value === null) {
+                        $fieldsToUpdate[$field] = $originalData[$field];
+                    } else {
+                        $fieldsToUpdate[$field] = $value;
+                    }
+                }
+                updateCampaignIntoDatabase($pdo, $fieldsToUpdate);
+                $response['result'] = createResponseArray($sanitizedData['id'], $fieldsToUpdate);
+            } else {
+                $response['error'] = 'Campaign not found';
+            }
+        
+        } else {
+            $response['error'] = 'Fields Not Sended or Missing';
+        }
+
+    } else {
+        $response['error'] = 'Method Not Allowed';
+    }
+    
+}
+
+function validateInputFields($input, $fields) {
+    $validatedData = [];
+
+    foreach ($fields as $field => $filter) {
+        if (isset($input[$field])) {
+            $value = filter_var($input[$field], $filter);
+            $validatedData[$field] = $value;
+        } else {
+            $validatedData[$field] = null;
+        }
+    }
+
+    return $validatedData;
+}
+
+function updateCampaignIntoDatabase($pdo, $data) {
+    $sql = $pdo->prepare('UPDATE campaigns SET name = :name, campaignbudget = :campaignbudget, 
+    campaignpublic = :campaignpublic, startdate = :startdate, enddate = :enddate, status = :status  WHERE id = :id');
+    
+    foreach ($data as $field => $value) {
+        $sql->bindValue(':' . $field, $value);
+    }
+    
+    $sql->execute();
 }
 
 require('./return.php');
