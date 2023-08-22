@@ -3,7 +3,7 @@ require('./config.php');
 
 
 // Endpoint para obter os detalhes de todas as campanhas
-if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/allcampaigns') {
+if ($_SERVER['REQUEST_URI'] === '/api.php/allcampaigns') {
     if($_SERVER['REQUEST_METHOD'] === 'GET'){
         $sql = $pdo->query("SELECT * FROM campaigns");
         if($sql->rowCount() > 0) {
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/allcampaigns') {
 }
 
 // Endpoint para obter os detalhes de uma campanha especifica
-if (strpos($_SERVER['REQUEST_URI'], '/backendtest/api.php/getcampaing') !== false) {
+if (strpos($_SERVER['REQUEST_URI'], '/api.php/getcampaing') !== false) {
     if($_SERVER['REQUEST_METHOD'] === 'GET'){
         $id = filter_input(INPUT_GET, 'id');
         if($id) {
@@ -60,7 +60,7 @@ if (strpos($_SERVER['REQUEST_URI'], '/backendtest/api.php/getcampaing') !== fals
 };
 
 // Endpoint para inserir uma nova campanha
-if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/campaigns') {
+if ($_SERVER['REQUEST_URI'] === '/api.php/campaigns') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $requiredFields = ['name', 'campaignbudget', 'campaignpublic', 'startdate', 'enddate'];
         $filteredData = filterInputFields(INPUT_POST, $requiredFields);
@@ -116,7 +116,7 @@ function createResponseArray($id, $data) {
 }
 
 // Endpoint para atualizar uma campanha
-if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/editcampaign') {
+if ($_SERVER['REQUEST_URI'] === '/api.php/editcampaign') {
     if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         parse_str(file_get_contents('php://input'), $input);
 
@@ -189,8 +189,8 @@ function updateCampaignIntoDatabase($pdo, $data) {
     $sql->execute();
 }
 
-// Endpoint para atualizar uma campanha
-if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/deletecampaign') {
+// Endpoint para deletar uma campanha
+if ($_SERVER['REQUEST_URI'] === '/api.php/deletecampaign') {
     if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         parse_str(file_get_contents('php://input'), $input);
 
