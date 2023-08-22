@@ -54,7 +54,7 @@ if (strpos($_SERVER['REQUEST_URI'], '/backendtest/api.php/getcampaing') !== fals
             $response['error'] = 'ID Not Sended';
         };
     } else {
-        $response['error'] = 'Method Not Allowed';
+        $response['error'] = 'Method Not Allowed, [only GET supported]';
     }
 };
 
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/campaigns') {
             $response['error'] = 'Fields Not Sended or Missing';
         }
     } else {
-        $response['error'] = 'Method Not Allowed';
+        $response['error'] = 'Method Not Allowed, [only POST supported]';
     }
 }
 
@@ -158,9 +158,8 @@ if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/editcampaign') {
         }
 
     } else {
-        $response['error'] = 'Method Not Allowed';
+        $response['error'] = 'Method Not Allowed, [only PUT supported]';
     }
-    
 }
 
 function validateInputFields($input, $fields) {
@@ -187,6 +186,28 @@ function updateCampaignIntoDatabase($pdo, $data) {
     }
     
     $sql->execute();
+}
+
+// Endpoint para atualizar uma campanha
+if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/deletecampaign') {
+    if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        parse_str(file_get_contents('php://input'), $input);
+
+        $id = $input['id'] ?? null;
+        $id = filter_var($id, FILTER_SANITIZE_NUMBER_INT);
+
+        if($id){
+            $sql = $pdo->prepare('DELETE FROM campaigns WHERE id = :id');
+            $sql->bindValue(':id', $id);
+            $sql->execute();
+
+            $response['sucess'] = 'The campaign has been deleted'; 
+        } else {
+            $response['error'] = 'ID Not Sent'; 
+        }
+    } else {
+        $response['error'] = 'Method Not Allowed [only DELETE supported]';
+    }
 }
 
 require('./return.php');
