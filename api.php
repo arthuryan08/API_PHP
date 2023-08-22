@@ -1,6 +1,7 @@
 <?php
 require('./config.php');
 
+
 // Endpoint para obter os detalhes de todas as campanhas
 if ($_SERVER['REQUEST_URI'] === '/backendtest/api.php/allcampaigns') {
     if($_SERVER['REQUEST_METHOD'] === 'GET'){
